@@ -1,101 +1,54 @@
-#include <iostream>
-#include <iomanip>
-#include <thread>
-#include "vec3.h"
-#include "color.h"
-#include "ray.h"
-
-double hit_sphere(const point3& center, double radius, const ray& r){
-    vec3 oc = center - r.origin();
-    auto a = r.direction().length_squared();
-    auto h = dot(oc, r.direction());
-    auto c = oc.length_squared() - radius*radius;
-    auto discriminant = h*h - a*c;
-    
-    if (discriminant < 0)
-    {
-        return -1.0;
-    }
-    else
-    {
-        return (h - std::sqrt(discriminant)) / (a);
-    }
-}
-color ray_color(const ray& r){
-
-    // std::clog << r.direction() << "\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    auto t = hit_sphere(point3(0,0,-1), 0.5, r);
-    //std::clog << t << "\n";
-
-    if(t > 0.0)
-    {
-        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
-        return 0.5*color(N.x()+1, N.y()+1, N.z()+1);
-    }
-
-    vec3 unit_direction = unit_vector(r.direction());
-    auto a = 0.5*(unit_direction.y() + 1.0);
-    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
-}
-
-
+#include "utils.h"
+#include "hittableList.h"
+#include "sphere.h"
+#include "camera.h"
+#include "material.h"
+#include "lambertian.h"
+#include "metal.h"
+#include "dielectric.h"
 
 int main() {
 
-    //Image 
+    hittableList world;
 
-    auto aspectRatio = 16.0 / 9.0;
-    int imageWidth = 400;
-
-    //Calculate the height of the image
-    int imageHeight = static_cast<int>(imageWidth / aspectRatio);
-    imageHeight = (imageHeight < 1 ) ? 1: imageHeight;
-
-    //Camera
-    auto focalLength = 1.0;
-    auto viewportHeight = 2.0;
-    auto viewportWidth = aspectRatio * viewportHeight;
-    auto cameraCenter = point3(0,0,0);
-
-    // Calculate the vectors across the horizontal and down the vertical viewport edges.
-    auto viewportU = vec3(viewportWidth, 0, 0);
-    auto viewportV = vec3(0, -viewportHeight, 0);
-
-    // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-    auto pixelDeltaU = viewportU / imageWidth;
-    auto pixelDeltaV = viewportV / imageHeight;
-
-    // Calculate the location of the upper left pixel.
-    auto viewportUpperLeft = cameraCenter - vec3(0,0, focalLength) - viewportU/2 - viewportV/2;
-    auto pixel00Loc = viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV);
-
-    std::clog << "viewportWidth: " << viewportWidth << " viewportHeight: " << viewportHeight << "\n";
-    std::clog << "viewportU: " << viewportU << " viewportV: " << viewportV << "\n";
-    std::clog << "imageWidth: " << imageWidth << " imageHeight: " << imageHeight << "\n";
-    std::clog << "pixelDeltaU: " << pixelDeltaU << " pixelDeltaV: " << pixelDeltaV << "\n";
-
-    std::clog << "viewportUpperLeft: " << viewportUpperLeft << "\n";
-    std::clog << "pixel00Loc: " << pixel00Loc << "\n";
-
-    // Render
-
-    std::cout << "P3\n" << imageWidth << " " << imageHeight << "\n255\n";
-    for (int j = 0; j < imageHeight; j++)
-    {
-        std::clog << "\rScanlines remaining: " << (imageHeight - j) << ' ' << std::flush;
-        for (int i = 0; i < imageWidth; i++)
-        {
-            auto pixelCenter = pixel00Loc + (i * pixelDeltaU) + (j * pixelDeltaV);
-            auto rayDirection = pixelCenter - cameraCenter;
-            ray r(cameraCenter, rayDirection);
-            color pixelColor = ray_color(r);
-            write_color(std::cout, pixelColor);
-        }
-        
-    }
+    //TODO: THỬ DÙNG GƯƠNG CẦU LÕM ĐỂ PHẢN XẠ ÁNH SÁNG
     
+    auto materialGround = std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
+    auto materialCenter = std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
+    //auto materialLeft = std::make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
+    auto materialLeft = std::make_shared<dielectric>(1.5);
+    auto materialBubble = std::make_shared<dielectric>(1.0 / 1.5);
+    auto materialRight = std::make_shared<metal>(color(0.8, 0.6, 0.2), 0.8);
+
+
+    world.add(std::make_shared<sphere>(point3(0,-100.5,-1), 100, materialGround));
+    world.add(std::make_shared<sphere>(point3(0,0,-1.2), 0.5, materialCenter));
+    world.add(std::make_shared<sphere>(point3(-1,0,-1), 0.5, materialLeft));
+    world.add(std::make_shared<sphere>(point3(-1,0,-1), 0.2, materialBubble));
+    world.add(std::make_shared<sphere>(point3(1,0,-1), 0.5, materialRight));
+
+    // auto R = cos(pi/4);
+
+    // auto materialLeft = std::make_shared<lambertian>(color(0, 0, 1));
+    // auto materialRight = std::make_shared<lambertian>(color(1, 0, 0));
+
+    // world.add(std::make_shared<sphere>(point3(-R, 0, -1), R, materialLeft));
+    // world.add(std::make_shared<sphere>(point3( R, 0, -1), R, materialRight));
+
+   camera cam;
+   cam.aspectRatio = 16.0 / 9.0;
+   cam.imageWidth = 800;
+   cam.samplePerPixel = 100;
+   cam.maxDepth = 50;
+
+   cam.vfov = 90;
+   cam.lookFrom = point3(-2, 2, 1);
+    cam.lookAt = point3(0, 0, 0);
+    cam.vUp = vec3(0, 1, 0);
+
+   cam.render(world);
+
+   return 0;  
 
 
     

@@ -1,4 +1,5 @@
 #include"vec3.h"
+#include"utils.h"
 
 vec3::vec3():
     e{0,0,0}
@@ -67,17 +68,24 @@ vec3& vec3::operator*=(const double t){
 }
 
 vec3& vec3::operator/=(const double t){
-    if(t==0){
-        return *this;
-    }
     return *this *= 1/t;
 }
 
 double vec3::length() const{
-    return std::sqrt(length_squared());
+    return std::sqrt(lengthSquared());
 }
 
-double vec3::length_squared() const{
+double vec3::lengthSquared() const{
     return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+}
+
+ vec3 vec3::random(double min, double max){
+    return vec3(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
+}
+
+bool vec3::nearZero() const{
+    // Return true if the vector is close to zero in all dimensions.
+    const auto s = 1e-8;
+    return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
 }
 

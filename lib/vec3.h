@@ -1,9 +1,9 @@
 #ifndef VEC3_H
 #define VEC3_H
 
-#include<cmath>
-#include<exception>
-#include<iostream>
+#include <cmath>
+#include <iostream>
+
 class vec3{
 
     private:
@@ -29,7 +29,10 @@ class vec3{
     vec3& operator/=(const double t);
 
     double length() const;
-    double length_squared() const;
+    double lengthSquared() const;
+    bool nearZero() const;
+
+    static vec3 random(double min = 0, double max = 0);
 
 };
 //type alias for vec3
@@ -47,7 +50,12 @@ inline vec3 operator+(const vec3& u, const vec3&v)
 
 inline vec3 operator-(const vec3& u, const vec3&v)
 {
-    return vec3(u[0]-v[0], u[1]-v[1], u[2]-v[2]);
+    //return vec3(u[0]-v[0], u[1]-v[1], u[2]-v[2]);
+
+  
+    return vec3(u[0]-v[0], u[1]-v[1], u[2]-v[2]);    
+    
+    
 }
 
 inline vec3 operator*(const vec3& u, const vec3&v)
@@ -62,7 +70,7 @@ inline vec3 operator*(double t, const vec3&v)
 
 inline vec3 operator*(const vec3&v, double t)
 {
-    return t*v;
+    return vec3(v.x() * t, v.y() * t, v.z() * t);
 }
 
 inline vec3 operator/(vec3 v, double t)
@@ -82,9 +90,42 @@ inline vec3 cross(const vec3& u, const vec3& v)
                 u[0]*v[1] - u[1]*v[0]);
 }
 
-inline vec3 unit_vector(vec3 v)
+inline vec3 unitVector(vec3 v)
 {
     return v/v.length();
+}
+
+inline vec3 randomUnitVector(){
+    
+    while(true){
+        auto p = vec3::random(-1, 1);
+        auto lensq = p.lengthSquared();
+        if (1e-160 < lensq && lensq <= 1)
+        {
+            return p / sqrt(lensq);
+        }
+    }
+}
+
+inline vec3 randomOnHemiSphere(const vec3& normal){
+    vec3 onUnitSphere = randomUnitVector();
+    if(dot(onUnitSphere, normal) > 0.0){
+        return onUnitSphere;
+    }
+    else{
+        return -onUnitSphere;
+    }
+}
+
+inline vec3 reflect(const vec3& v, const vec3& n){
+    return v - 2*dot(v,n)*n;
+}
+
+inline vec3 refract(const vec3& uv, const vec3& n, double etaIOverEtaT){
+    auto cosTheta = fmin(dot(-uv, n), 1.0);
+    vec3 rOutPerp = etaIOverEtaT * (uv + cosTheta*n);
+    vec3 rOutParallel = -sqrt(fabs(1.0 - rOutPerp.lengthSquared())) * n;
+    return rOutPerp + rOutParallel;
 }
 
 #endif
