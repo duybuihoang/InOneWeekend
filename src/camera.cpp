@@ -33,11 +33,9 @@ void camera::initialize(){
 
     center = lookFrom;
 
-    auto focalLength = (lookFrom - lookAt).length();
-
     auto theta = degreesToRadians(vfov);
     auto h = tan(theta / 2);
-    auto viewportHeight = 2.0 * h * focalLength;
+    auto viewportHeight = 2.0 * h * focusDist;
     auto viewportWidth = viewportHeight * (double (imageWidth) / imageHeight);
 
     w = unitVector(lookFrom - lookAt);
@@ -50,8 +48,13 @@ void camera::initialize(){
     pixelDeltaU = viewportU / imageWidth;
     pixelDeltaV = viewportV / imageHeight;
 
-    auto viewportUpperLeft = center - (focalLength * w) - viewportU/2 - viewportV/2;
+    auto viewportUpperLeft = center - (focusDist * w) - viewportU/2 - viewportV/2;
     pixel00Loc = viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV);
+
+    //calculate camera defocus disk
+    auto defocusRadius = focusDist * tan(degreesToRadians(defocusAngle) / 2);
+    defocusDiskU = defocusRadius * u;
+    defocusDiskV = defocusRadius * v;
 
     std::clog << "viewportWidth: " << viewportWidth << " viewportHeight: " << viewportHeight << "\n";
     std::clog << "viewportU: " << viewportU << " viewportV: " << viewportV << "\n";
@@ -94,12 +97,15 @@ color camera::rayColor(const ray& r,int depth, const hittable& world) const{
 }
 
 ray camera::getRay(int i, int j) const{
+    // Construct a camera ray originating from the defocus disk and directed at a randomly
+    // sampled point around the pixel location i, j.
+
     auto offset = sampleSquare();
     auto pixelSample = pixel00Loc 
                         + (i + offset.x()) * pixelDeltaU
                         + (j + offset.y()) * pixelDeltaV;
 
-    auto rayOrigin = center;
+    auto rayOrigin = defocusAngle <= 0 ? center : center + defocusDiskSample();
     auto rayDirection = pixelSample - rayOrigin;
 
     return ray(rayOrigin, rayDirection);
@@ -107,4 +113,9 @@ ray camera::getRay(int i, int j) const{
 
 vec3 camera::sampleSquare() const{
     return vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
+}
+
+point3 camera::defocusDiskSample() const{
+    auto p = randomInUnitDisk();
+    return center + (p.x() * defocusDiskU) + (p.y() * defocusDiskV);
 }

@@ -35,6 +35,8 @@ class vec3{
     static vec3 random(double min = 0, double max = 0);
 
 };
+
+
 //type alias for vec3
 using point3 = vec3;
 
@@ -106,6 +108,8 @@ inline vec3 randomUnitVector(){
         }
     }
 }
+
+vec3 randomInUnitDisk();
 
 inline vec3 randomOnHemiSphere(const vec3& normal){
     vec3 onUnitSphere = randomUnitVector();

@@ -1,6 +1,5 @@
 #include"vec3.h"
-#include"utils.h"
-
+#include "utils.h"
 vec3::vec3():
     e{0,0,0}
 {}
@@ -89,3 +88,12 @@ bool vec3::nearZero() const{
     return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
 }
 
+
+// Utility Functions
+vec3 randomInUnitDisk(){
+    while(true){
+        auto p = vec3(randomDouble(-1, 1), randomDouble(-1, 1), 0);
+        if(p.lengthSquared() >= 1) continue;
+        return p;
+    }
+}
