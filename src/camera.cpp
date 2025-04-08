@@ -8,7 +8,7 @@ void camera::render(const hittable& world) {
 
     for (int j = 0; j < imageHeight; j++)
     {
-        //std::clog << "\rScanlines remaining: " << (imageHeight - j) << ' ' << std::flush;
+        std::clog << "\rScanlines remaining: " << (imageHeight - j) << ' ' << std::flush;
         for (int i = 0; i < imageWidth; i++)
         {  
             color pixelColor(0,0,0);
