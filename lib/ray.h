@@ -20,6 +20,7 @@ class ray{
     point3 at(double t) const;
     double time() const;
 
+    double Time() const;
 };
 
 
