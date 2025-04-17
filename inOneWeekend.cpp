@@ -10,49 +10,62 @@
 int main() {
 
     hittableList world;
+    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
-    // //TODO: THỬ DÙNG GƯƠNG CẦU LÕM ĐỂ PHẢN XẠ ÁNH SÁNG
-    
-    auto materialGround = std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    auto materialCenter = std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
-    //auto materialLeft = std::make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
-    auto materialLeft = std::make_shared<dielectric>(1.5);
-    auto materialBubble = std::make_shared<dielectric>(1.0 / 1.5);
-    auto materialRight = std::make_shared<metal>(color(0.8, 0.6, 0.2), 0.8);
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = randomDouble();
+            point3 center(a + 0.9*randomDouble(), 0.2, b + 0.9*randomDouble());
 
+            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
+                shared_ptr<material> sphere_material;
 
-    world.add(std::make_shared<sphere>(point3(0,-100.5,-1), 100, materialGround));
-    world.add(std::make_shared<sphere>(point3(0,0,-1.2), 0.5, materialCenter));
-    world.add(std::make_shared<sphere>(point3(-1,0,-1), 0.5, materialLeft));
-    world.add(std::make_shared<sphere>(point3(-1,0,-1), 0.2, materialBubble));
-    world.add(std::make_shared<sphere>(point3(1,0,-1), 0.5, materialRight));
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    auto albedo = color::random() * color::random();
+                    sphere_material = make_shared<lambertian>(albedo);
+                    auto center2 = center + vec3(0, randomDouble(0, 0.5), 0);
+                    world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
+                } else if (choose_mat < 0.95) {
+                    // metal
+                    auto albedo = color::random(0.5, 1);
+                    auto fuzz = randomDouble(0, 0.5);
+                    sphere_material = make_shared<metal>(albedo, fuzz);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                } else {
+                    // glass
+                    sphere_material = make_shared<dielectric>(1.5);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
 
-    // auto R = cos(pi/4);
+    auto material1 = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
 
-    // auto materialLeft = std::make_shared<lambertian>(color(0, 0, 1));
-    // auto materialRight = std::make_shared<lambertian>(color(1, 0, 0));
+    auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
+    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
 
-    // world.add(std::make_shared<sphere>(point3(-R, 0, -1), R, materialLeft));
-    // world.add(std::make_shared<sphere>(point3( R, 0, -1), R, materialRight));
+    auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-   camera cam;
-   cam.aspectRatio = 16.0 / 9.0;
-   cam.imageWidth = 400;
-   cam.samplePerPixel = 100;
-   cam.maxDepth = 50;
+    camera cam;
 
-   cam.vfov = 20;
-   cam.lookFrom = point3(13, 2, 3);
-    cam.lookAt = point3(0, 0, 0);
-   cam.lookFrom = point3(13, 2, 3);
-    cam.lookAt = point3(0, 0, 0);
-    cam.vUp = vec3(0, 1, 0);
+    cam.aspectRatio      = 16.0 / 9.0;
+    cam.imageWidth       = 400;
+    cam.samplePerPixel = 100;
+    cam.maxDepth         = 50;
+
+    cam.vfov     = 20;
+    cam.lookFrom = point3(13,2,3);
+    cam.lookAt   = point3(0,0,0);
+    cam.vUp      = vec3(0,1,0);
 
     cam.defocusAngle = 0.6;
-    cam.focusDist = 10.0;
-    cam.defocusAngle = 0.6;
-    cam.focusDist = 10.0;
+    cam.focusDist    = 10.0;
 
-   cam.render(world);
+    cam.render(world);
 
 }
