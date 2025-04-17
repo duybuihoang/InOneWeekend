@@ -76,7 +76,7 @@ color camera::rayColor(const ray& r,int depth, const hittable& world) const{
         return color(0,0,0);
     }
     
-    if(world.hit(r, 0.001, infinity, rec))
+    if(world.hit(r, interval(0.001, infinity), rec))
     {
         // vec3 direction = randomOnHemiSphere(rec.normal) + randomUnitVector();
         // return 0.5 * rayColor(ray(rec.p, direction), depth-1, world);

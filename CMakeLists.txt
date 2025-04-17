@@ -18,6 +18,8 @@ set(SOURCES
     src/lambertian.cpp
     src/metal.cpp
     src/dielectric.cpp
+    src/aabb.cpp
+    src/bvh.cpp
 )
 # Header files      
 set(HEADERS
@@ -35,6 +37,8 @@ set(HEADERS
     lib/lambertian.h
     lib/metal.h
     lib/dielectric.h
+    lib/aabb.h
+    lib/bvh.h
 )
 
 

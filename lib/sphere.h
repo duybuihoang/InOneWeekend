@@ -9,13 +9,16 @@ class sphere: public hittable{
         ray center;
         double radius;
         shared_ptr<material> mat;
+        aabb bbox;
     public:
         //sphere(const point3& center, double radius, shared_ptr<material> mat);
 
         sphere(const point3& staticCenter, double radius, shared_ptr<material> mat);
         sphere(const point3& center1, const point3& center2, double radius, shared_ptr<material> mat);
 
-        bool hit(const ray& r, double rayTMin, double rayTMax, hitRecord & rec) const override;
+        bool hit(const ray& r, interval rayT, hitRecord & rec) const override;
+
+        aabb boundingBox() const override;
 };
 
 

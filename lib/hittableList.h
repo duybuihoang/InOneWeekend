@@ -8,6 +8,8 @@
 #include <vector>
 
 class hittableList : public hittable{
+    private:
+        aabb bbox;
     public: 
     std::vector<shared_ptr<hittable>> objects;
 
@@ -16,7 +18,9 @@ class hittableList : public hittable{
 
     void clear();
     void add(shared_ptr<hittable> object);  
-    bool hit(const ray& r, double rayTMin, double rayTMax, hitRecord& rec) const override;
+    bool hit(const ray& r, interval rayT, hitRecord& rec) const override;
+
+    aabb boundingBox() const override;
 };
 
 
