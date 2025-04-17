@@ -23,6 +23,6 @@ bool dielectric::scatter(const ray& rIn, const hitRecord& rec, color& attenuatio
         direction = refract(unitDirection, rec.normal, ri);
     }
 
-    scattered = ray(rec.p, direction);
+    scattered = ray(rec.p, direction, rIn.time());
     return true;
 }

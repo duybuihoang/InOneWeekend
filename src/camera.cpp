@@ -8,7 +8,7 @@ void camera::render(const hittable& world) {
 
     for (int j = 0; j < imageHeight; j++)
     {
-        //std::clog << "\rScanlines remaining: " << (imageHeight - j) << ' ' << std::flush;
+        std::clog << "\rScanlines remaining: " << (imageHeight - j) << ' ' << std::flush;
         for (int i = 0; i < imageWidth; i++)
         {  
             color pixelColor(0,0,0);
@@ -107,8 +107,9 @@ ray camera::getRay(int i, int j) const{
 
     auto rayOrigin = defocusAngle <= 0 ? center : center + defocusDiskSample();
     auto rayDirection = pixelSample - rayOrigin;
+    auto rayTime = randomDouble();
 
-    return ray(rayOrigin, rayDirection);
+    return ray(rayOrigin, rayDirection, rayTime);
 }
 
 vec3 camera::sampleSquare() const{

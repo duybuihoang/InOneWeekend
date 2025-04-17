@@ -12,7 +12,7 @@ bool metal::scatter(const ray& rIn, const hitRecord& rec, color& attenuation, ra
     vec3 reflected = reflect(unitVector(rIn.direction()), rec.normal);
     reflected = unitVector(reflected) + fuzz * randomUnitVector();
 
-    scattered = ray(rec.p, reflected);
+    scattered = ray(rec.p, reflected, rIn.time());
     attenuation = albedo;
 
     return (dot(scattered.direction(), rec.normal) > 0);
